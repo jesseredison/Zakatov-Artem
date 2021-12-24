@@ -1,41 +1,39 @@
-global sum = 0
-global k = 0
-function gotoborder(r, side)
-    while(!isborder(r, side))
+tempSum = 0
+numOfCells = 0
+
+function countAvgTemp(r::Robot)
+    dir = Ost
+    move_while_can!(r, dir)
+    dir = inverse(dir)
+    while !isborder(r,Nord)
+      move!(r, Nord)
+      move_while_can!(r, dir)
+      dir = inverse(dir)
+    end
+    if numOfCells > 0 
+        return tempSum/numOfCells
+    else
+        return 0
+    end   
+end
+
+#Двигает робота в сторону side, пока нет перегородки
+function move_while_can!(r::Robot, side)
+    checkCell(r)
+    while !isborder(r, side)
         move!(r, side)
+        checkCell(r) 
     end
 end
-function taketemperature(r)
-    if(ismarker(r))
-        global sum = sum + temperature(r)
-        global k = k + 1
-    end
+
+function checkCell(r::Robot)
+   global tempSum, numOfCells
+   if ismarker(r) 
+      tempSum += temperature(r) 
+      numOfCells += 1
+   end
 end
-function check_line(r, side)
-    while(!isborder(r, side))
-        taketemperature(r)
-        move!(r, side)
-    end
-end
+
 function inverse(side)
-    if(side == West)
-        return Ost
-    end
-    if(side == Ost)
-        return West
-    end
-end
-function main(r::Robot)
-    side = Ost
-    while(!isborder(r, Nord))
-        check_line(r, side)
-        side = inverse(side)
-        move!(r, Nord)
-    end
-    if(isborder(r, West))
-        check_line(r, Ost)
-    elseif(isborder(r, Ost))
-        check_line(r, West)
-    end
-    print(sum/k)
+    return HorizonSide(mod(Int(side) + 2, 4))
 end
